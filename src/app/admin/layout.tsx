@@ -4,11 +4,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
 const NAV = [
-  { href: "/admin/dashboard", label: "Dashboard", icon: "📊" },
-  { href: "/admin/bookings",  label: "Bookings",  icon: "📅" },
-  { href: "/admin/customers", label: "Customers", icon: "👥" },
-  { href: "/admin/services",  label: "Services",  icon: "✂️" },
-  { href: "/admin/staff",     label: "Staff",     icon: "💼" },
+  { href: "/admin/dashboard",  label: "Dashboard",  icon: "📊" },
+  { href: "/admin/bookings",   label: "Bookings",   icon: "📅" },
+  { href: "/admin/customers",  label: "Customers",  icon: "👥" },
+  { href: "/admin/services",   label: "Services",   icon: "✂️" },
+  { href: "/admin/staff",      label: "Staff",      icon: "💼" },
+  { href: "/admin/commission", label: "Commission", icon: "💵" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
