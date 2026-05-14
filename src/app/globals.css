@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --rose-gold: #B76E79;
+  --rose-light: #E8A0A9;
+  --rose-pale: #FFF0F3;
+  --rose-deep: #8B4E57;
+  --champagne: #F7E7CE;
+  --mink: #2D1B1E;
+}
+
+* {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: var(--mink);
+  background-color: #ffffff;
+}
+
+h1, h2, h3 {
+  font-family: 'Playfair Display', serif;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-[#B76E79] hover:bg-[#8B4E57] text-white font-medium px-6 py-3 rounded-full transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5;
+  }
+
+  .btn-whatsapp {
+    @apply bg-[#25D366] hover:bg-[#1ebe5d] text-white font-medium px-6 py-3 rounded-full transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg;
+  }
+
+  .section-title {
+    @apply font-playfair text-3xl md:text-4xl font-semibold text-[#2D1B1E] mb-3;
+  }
+
+  .section-subtitle {
+    @apply text-[#B76E79] font-medium tracking-widest text-sm uppercase mb-4;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  }
+}
