@@ -10,7 +10,7 @@ export async function GET(req: Request) {
   const [y, m] = month.split("-").map(Number);
   const lastDay = new Date(y, m, 0).toISOString().split("T")[0];
 
-  // 1. All active staff
+  // 1. All active staff with commission rates
   const { data: staffList, error: staffErr } = await supabaseAdmin
     .from("saloon_staff")
     .select("id, name, speciality, commission_rate")
@@ -20,41 +20,27 @@ export async function GET(req: Request) {
 
   if (staffErr) return NextResponse.json({ error: staffErr.message }, { status: 500 });
 
-  // 2. Completed bookings this month — raw columns only (no join, avoids type issues)
-  const { data: bookings, error: bookErr } = await supabaseAdmin
-    .from("saloon_bookings")
-    .select("staff_id, service_id")
-    .eq("tenant_id", TENANT_ID)
-    .eq("status", "completed")
-    .gte("booking_date", firstDay)
-    .lte("booking_date", lastDay);
+  // 2. Use SQL RPC to get earnings — avoids all JS type issues with joins
+  const { data: earnings, error: earnErr } = await supabaseAdmin.rpc("get_staff_earnings", {
+    p_tenant_id: TENANT_ID,
+    p_start: firstDay,
+    p_end: lastDay,
+  });
 
-  if (bookErr) return NextResponse.json({ error: bookErr.message }, { status: 500 });
+  if (earnErr) return NextResponse.json({ error: earnErr.message }, { status: 500 });
 
-  // 3. Service prices lookup
-  const { data: services } = await supabaseAdmin
-    .from("saloon_services")
-    .select("id, price")
-    .eq("tenant_id", TENANT_ID);
-
-  const priceMap: Record<string, number> = {};
-  for (const s of services ?? []) {
-    priceMap[s.id] = Number(s.price);
+  // Build earnings lookup map: staff_id → { revenue, count }
+  const earningsMap: Record<string, { revenue: number; count: number }> = {};
+  for (const row of earnings ?? []) {
+    earningsMap[row.staff_id] = {
+      revenue: Number(row.revenue),
+      count: Number(row.booking_count),
+    };
   }
 
-  // 4. Aggregate earnings per staff_id
-  const earningsMap: Record<string, { count: number; revenue: number }> = {};
-  for (const b of bookings ?? []) {
-    if (!b.staff_id) continue;
-    const price = priceMap[b.service_id ?? ""] ?? 0;
-    if (!earningsMap[b.staff_id]) earningsMap[b.staff_id] = { count: 0, revenue: 0 };
-    earningsMap[b.staff_id].count += 1;
-    earningsMap[b.staff_id].revenue += price;
-  }
-
-  // 5. Build final result
+  // 3. Build final result — merge staff list with earnings
   const result = (staffList ?? []).map((s) => {
-    const earn = earningsMap[s.id] ?? { count: 0, revenue: 0 };
+    const earn = earningsMap[s.id] ?? { revenue: 0, count: 0 };
     const commission = (earn.revenue * Number(s.commission_rate)) / 100;
     return {
       id: s.id,
