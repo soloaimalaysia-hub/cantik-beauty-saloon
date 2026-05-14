@@ -4,13 +4,13 @@ import { supabaseAdmin, TENANT_ID } from "@/lib/supabase-server";
 // GET: staff commission summary for a given month (YYYY-MM)
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const month = searchParams.get("month") ?? new Date().toISOString().slice(0, 7); // e.g. "2026-05"
+  const month = searchParams.get("month") ?? new Date().toISOString().slice(0, 7);
 
   const firstDay = `${month}-01`;
   const [y, m] = month.split("-").map(Number);
-  const lastDay = new Date(y, m, 0).toISOString().split("T")[0]; // last day of month
+  const lastDay = new Date(y, m, 0).toISOString().split("T")[0];
 
-  // Get all active staff with commission rates
+  // 1. All active staff
   const { data: staffList, error: staffErr } = await supabaseAdmin
     .from("saloon_staff")
     .select("id, name, speciality, commission_rate")
@@ -20,10 +20,10 @@ export async function GET(req: Request) {
 
   if (staffErr) return NextResponse.json({ error: staffErr.message }, { status: 500 });
 
-  // Get all completed bookings this month with service prices
+  // 2. Completed bookings this month — raw columns only (no join, avoids type issues)
   const { data: bookings, error: bookErr } = await supabaseAdmin
     .from("saloon_bookings")
-    .select("staff_id, saloon_services(service_name, price)")
+    .select("staff_id, service_id")
     .eq("tenant_id", TENANT_ID)
     .eq("status", "completed")
     .gte("booking_date", firstDay)
@@ -31,18 +31,28 @@ export async function GET(req: Request) {
 
   if (bookErr) return NextResponse.json({ error: bookErr.message }, { status: 500 });
 
-  // Aggregate per staff
+  // 3. Service prices lookup
+  const { data: services } = await supabaseAdmin
+    .from("saloon_services")
+    .select("id, price")
+    .eq("tenant_id", TENANT_ID);
+
+  const priceMap: Record<string, number> = {};
+  for (const s of services ?? []) {
+    priceMap[s.id] = Number(s.price);
+  }
+
+  // 4. Aggregate earnings per staff_id
   const earningsMap: Record<string, { count: number; revenue: number }> = {};
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  for (const b of (bookings ?? []) as any[]) {
+  for (const b of bookings ?? []) {
     if (!b.staff_id) continue;
-    const price = Number(b?.saloon_services?.price ?? 0);
+    const price = priceMap[b.service_id ?? ""] ?? 0;
     if (!earningsMap[b.staff_id]) earningsMap[b.staff_id] = { count: 0, revenue: 0 };
     earningsMap[b.staff_id].count += 1;
     earningsMap[b.staff_id].revenue += price;
   }
 
-  // Build response
+  // 5. Build final result
   const result = (staffList ?? []).map((s) => {
     const earn = earningsMap[s.id] ?? { count: 0, revenue: 0 };
     const commission = (earn.revenue * Number(s.commission_rate)) / 100;
@@ -53,7 +63,7 @@ export async function GET(req: Request) {
       commission_rate: Number(s.commission_rate),
       completed_bookings: earn.count,
       revenue: earn.revenue,
-      commission: commission,
+      commission,
     };
   });
 
