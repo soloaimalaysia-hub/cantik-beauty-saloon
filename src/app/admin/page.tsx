@@ -30,10 +30,10 @@ export default function AdminLogin() {
       <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#B76E79] to-[#8B4E57] flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4 shadow-lg">
-            C
+            R
           </div>
           <h1 className="font-playfair text-2xl font-bold text-[#2D1B1E]">Admin Panel</h1>
-          <p className="text-[#B76E79] text-sm mt-1">Cantik Beauty Saloon</p>
+          <p className="text-[#B76E79] text-sm mt-1">Rs Atelier Studio</p>
         </div>
 
         <form onSubmit={login} className="space-y-4">

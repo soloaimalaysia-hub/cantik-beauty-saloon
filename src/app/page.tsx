@@ -21,13 +21,13 @@ interface SectionCfg {
 
 // ─── Defaults ────────────────────────────────────────────────────────────────
 const DEFAULT_BRAND: Brand = {
-  business_name: "Cantik Beauty Saloon",
-  slogan: "Look Beautiful, Feel Cantik",
+  business_name: "Rs Atelier Studio",
+  slogan: "Where Style Meets Artistry",
   logo_url: null,
   brand_color_primary: "#B76E79",
   brand_color_secondary: "#8B4E57",
   whatsapp: "60123456789",
-  address: "No. 12, Jalan Cantik 3, Taman Indah, Kuala Lumpur",
+  address: "Kuala Lumpur, Malaysia",
   operating_hours: "Mon–Fri: 10am – 8pm\nSat: 9am – 9pm\nSun: 10am – 7pm",
 };
 
@@ -330,7 +330,7 @@ export default async function LandingPage() {
         style={{ background: `linear-gradient(90deg, #2D1B1E, ${sc})` }}>
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h2 className="font-playfair text-4xl font-bold text-white mb-4">
-            Ready to Feel <span className="italic text-[#F7E7CE]">Cantik</span>?
+            Ready for Your <span className="italic text-[#F7E7CE]">Transformation</span>?
           </h2>
           <p className="text-white/70 mb-8">Book your appointment now via WhatsApp — fast, easy, no app needed.</p>
           <a href={bookLink} target="_blank" rel="noopener noreferrer"
@@ -389,7 +389,7 @@ export default async function LandingPage() {
           </div>
           <div className="border-t border-white/10 pt-6 text-center text-white/40 text-xs">
             © 2026 {brand.business_name} · Powered by{" "}
-            <span style={{ color: pc }}>DurianTech</span>
+            <a href="https://duriantech.my" target="_blank" rel="noopener noreferrer" style={{ color: pc }}>DurianTech</a>
           </div>
         </div>
       </footer>

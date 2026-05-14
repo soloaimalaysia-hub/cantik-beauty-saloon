@@ -14,13 +14,13 @@ interface BrandForm {
 }
 
 const DEFAULTS: BrandForm = {
-  business_name: "Cantik Beauty Saloon",
-  slogan: "Look Beautiful, Feel Cantik",
+  business_name: "Rs Atelier Studio",
+  slogan: "Where Style Meets Artistry",
   logo_url: "",
   brand_color_primary: "#B76E79",
   brand_color_secondary: "#8B4E57",
   whatsapp: "60123456789",
-  address: "No. 12, Jalan Cantik 3, Taman Indah, Kuala Lumpur",
+  address: "Kuala Lumpur, Malaysia",
   operating_hours: "Mon–Fri: 10am – 8pm\nSat: 9am – 9pm\nSun: 10am – 7pm",
 };
 
@@ -104,11 +104,11 @@ export default function BrandPage() {
           <Section title="🏪 Shop Info">
             <Field label="Shop Name">
               <input value={form.business_name} onChange={(e) => set("business_name", e.target.value)}
-                className={input} placeholder="Cantik Beauty Saloon" />
+                className={input} placeholder="Rs Atelier Studio" />
             </Field>
             <Field label="Slogan">
               <input value={form.slogan} onChange={(e) => set("slogan", e.target.value)}
-                className={input} placeholder="Look Beautiful, Feel Cantik" />
+                className={input} placeholder="Where Style Meets Artistry" />
             </Field>
             <Field label="WhatsApp Number">
               <input value={form.whatsapp} onChange={(e) => set("whatsapp", e.target.value)}
@@ -176,7 +176,7 @@ export default function BrandPage() {
           <Section title="📍 Location & Hours">
             <Field label="Address">
               <input value={form.address} onChange={(e) => set("address", e.target.value)}
-                className={input} placeholder="No. 12, Jalan Cantik 3, KL" />
+                className={input} placeholder="Kuala Lumpur, Malaysia" />
             </Field>
             <Field label="Operating Hours">
               <textarea value={form.operating_hours}

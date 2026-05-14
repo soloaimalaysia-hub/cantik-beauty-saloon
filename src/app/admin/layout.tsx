@@ -71,10 +71,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="p-5 border-b border-white/10 shrink-0">
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#B76E79] to-[#E8A0A9] flex items-center justify-center text-white font-bold text-sm shrink-0">
-          C
+          R
         </div>
         <div>
-          <p className="font-playfair font-bold text-sm leading-tight">Cantik Beauty</p>
+          <p className="font-playfair font-bold text-sm leading-tight">Rs Atelier Studio</p>
           <p className="text-[#B76E79] text-xs">Admin</p>
         </div>
       </div>
@@ -94,9 +94,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <header className="lg:hidden fixed top-0 inset-x-0 z-30 bg-[#2D1B1E] text-white flex items-center justify-between px-4 h-14 shadow-lg">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#B76E79] to-[#E8A0A9] flex items-center justify-center text-white font-bold text-xs">
-            C
+            R
           </div>
-          <span className="font-playfair font-bold text-sm">Cantik Beauty</span>
+          <span className="font-playfair font-bold text-sm">Rs Atelier Studio</span>
         </div>
         {/* Hamburger */}
         <button
@@ -128,7 +128,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   C
                 </div>
                 <div>
-                  <p className="font-playfair font-bold text-sm leading-tight">Cantik Beauty</p>
+                  <p className="font-playfair font-bold text-sm leading-tight">Rs Atelier Studio</p>
                   <p className="text-[#B76E79] text-xs">Admin</p>
                 </div>
               </div>
