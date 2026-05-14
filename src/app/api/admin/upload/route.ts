@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 
-const BUCKET = "service-media";
+const DEFAULT_BUCKET = "service-media";
+const ALLOWED_BUCKETS = ["service-media", "brand-assets"];
 const MAX_IMAGE_SIZE = 8 * 1024 * 1024;  // 8 MB
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50 MB
 
 export async function POST(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const bucketParam = searchParams.get("bucket") ?? DEFAULT_BUCKET;
+    const BUCKET = ALLOWED_BUCKETS.includes(bucketParam) ? bucketParam : DEFAULT_BUCKET;
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 
@@ -61,10 +66,13 @@ export async function POST(req: Request) {
 // DELETE a file from storage
 export async function DELETE(req: Request) {
   try {
-    const { path } = await req.json();
+    const body = await req.json();
+    const { path, bucket } = body as { path?: string; bucket?: string };
     if (!path) return NextResponse.json({ error: "No path" }, { status: 400 });
 
-    const { error } = await supabaseAdmin.storage.from(BUCKET).remove([path]);
+    const targetBucket = ALLOWED_BUCKETS.includes(bucket ?? "") ? (bucket as string) : DEFAULT_BUCKET;
+
+    const { error } = await supabaseAdmin.storage.from(targetBucket).remove([path]);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     return NextResponse.json({ ok: true });
