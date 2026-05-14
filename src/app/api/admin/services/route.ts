@@ -4,7 +4,7 @@ import { supabaseAdmin, TENANT_ID } from "@/lib/supabase-server";
 export async function GET() {
   const { data, error } = await supabaseAdmin
     .from("saloon_services")
-    .select("id, service_name, duration_minutes, price, is_active")
+    .select("id, service_name, duration_minutes, price, is_active, media")
     .eq("tenant_id", TENANT_ID)
     .order("service_name");
 
@@ -20,6 +20,7 @@ export async function POST(req: Request) {
     duration_minutes: body.duration_minutes,
     price: body.price,
     is_active: true,
+    media: body.media ?? [],
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
