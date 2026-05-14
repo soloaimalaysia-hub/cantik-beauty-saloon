@@ -33,12 +33,13 @@ export async function GET(req: Request) {
 
   // Aggregate per staff
   const earningsMap: Record<string, { count: number; revenue: number }> = {};
-  for (const b of bookings ?? []) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  for (const b of (bookings ?? []) as any[]) {
     if (!b.staff_id) continue;
-    const svc = b.saloon_services as { price: number } | null;
+    const price = Number(b?.saloon_services?.price ?? 0);
     if (!earningsMap[b.staff_id]) earningsMap[b.staff_id] = { count: 0, revenue: 0 };
     earningsMap[b.staff_id].count += 1;
-    earningsMap[b.staff_id].revenue += Number(svc?.price ?? 0);
+    earningsMap[b.staff_id].revenue += price;
   }
 
   // Build response
