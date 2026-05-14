@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 const ADMIN_TOKEN = Buffer.from("KennyNgui88").toString("base64");
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Protect all /admin/* except /admin (login page)
