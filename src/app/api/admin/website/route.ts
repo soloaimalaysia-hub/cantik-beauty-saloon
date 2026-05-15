@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { supabaseAdmin, TENANT_ID } from "@/lib/supabase-server";
 
 export async function GET() {
@@ -24,5 +25,6 @@ export async function POST(req: Request) {
   const results = await Promise.all(updates);
   const err = results.find((r) => r.error);
   if (err?.error) return NextResponse.json({ error: err.error.message }, { status: 500 });
+  revalidatePath("/"); // immediately refresh landing page cache
   return NextResponse.json({ ok: true });
 }

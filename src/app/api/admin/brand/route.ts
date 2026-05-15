@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { supabaseAdmin, TENANT_ID } from "@/lib/supabase-server";
 
 const FIELDS = "business_name,slogan,logo_url,brand_color_primary,brand_color_secondary,whatsapp,address,operating_hours";
@@ -29,5 +30,6 @@ export async function PATCH(req: Request) {
     .update(updates)
     .eq("id", TENANT_ID);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  revalidatePath("/"); // immediately refresh landing page cache
   return NextResponse.json({ ok: true });
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { supabaseAdmin, TENANT_ID } from "@/lib/supabase-server";
 
 export async function GET() {
@@ -23,6 +24,7 @@ export async function POST(req: Request) {
     media: body.media ?? [],
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  revalidatePath("/");
   return NextResponse.json({ ok: true });
 }
 
@@ -34,6 +36,7 @@ export async function PATCH(req: Request) {
     .eq("id", id)
     .eq("tenant_id", TENANT_ID);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  revalidatePath("/");
   return NextResponse.json({ ok: true });
 }
 
