@@ -8,7 +8,9 @@ export async function GET(req: Request) {
 
   const firstDay = `${month}-01`;
   const [y, m] = month.split("-").map(Number);
-  const lastDay = new Date(y, m, 0).toISOString().split("T")[0];
+  // Use local date parts — avoid toISOString() which shifts UTC and gives wrong date
+  const lastDayDate = new Date(y, m, 0); // day 0 of next month = last day of this month
+  const lastDay = `${lastDayDate.getFullYear()}-${String(lastDayDate.getMonth() + 1).padStart(2, "0")}-${String(lastDayDate.getDate()).padStart(2, "0")}`;
 
   // 1. All active staff with commission rates
   const { data: staffList, error: staffErr } = await supabaseAdmin

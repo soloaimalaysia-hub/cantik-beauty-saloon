@@ -16,7 +16,8 @@ function getMonthOptions() {
   const now = new Date();
   for (let i = 0; i < 6; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const value = d.toISOString().slice(0, 7);
+    // Use local date parts — avoid toISOString() which shifts timezone to UTC
+    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     const label = d.toLocaleDateString("en-MY", { month: "long", year: "numeric" });
     opts.push({ value, label });
   }
