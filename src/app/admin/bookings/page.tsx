@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
+import AddBookingModal from "./AddBookingModal";
 
 interface Booking {
   id: string;
@@ -76,6 +77,7 @@ export default function BookingsPage() {
   const [selected, setSelected]   = useState<Booking | null>(null);
   const [filter, setFilter]       = useState("all");
   const [updating, setUpdating]   = useState<string | null>(null);
+  const [addOpen, setAddOpen]     = useState(false);
 
   const load = () => {
     fetch("/api/admin/bookings")
@@ -133,9 +135,15 @@ export default function BookingsPage() {
   return (
     <div className="space-y-4">
       {/* ── Header ── */}
-      <div>
-        <h1 className="font-playfair text-2xl font-bold text-[#2D1B1E]">Bookings</h1>
-        <p className="text-gray-500 text-sm">{bookings.length} total bookings</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="font-playfair text-2xl font-bold text-[#2D1B1E]">Bookings</h1>
+          <p className="text-gray-500 text-sm">{bookings.length} total bookings</p>
+        </div>
+        <button onClick={() => setAddOpen(true)}
+          className="flex items-center gap-2 bg-[#B76E79] hover:bg-[#8B4E57] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm">
+          ➕ Add Booking
+        </button>
       </div>
 
       {/* ── View Toggle ── */}
@@ -224,6 +232,11 @@ export default function BookingsPage() {
             ))}
           </div>
         </div>
+      )}
+
+      {/* ── Add Booking Modal ── */}
+      {addOpen && (
+        <AddBookingModal onClose={() => setAddOpen(false)} onCreated={load} />
       )}
 
       {/* ── Detail Modal ── */}
