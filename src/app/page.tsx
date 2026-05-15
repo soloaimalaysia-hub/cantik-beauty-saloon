@@ -19,6 +19,16 @@ interface SectionCfg {
   is_visible: boolean;
 }
 
+interface MediaItem { url: string; type: string; path: string }
+interface ServiceDB {
+  id: string;
+  service_name: string;
+  price: number | null;
+  media: MediaItem[] | null;
+}
+
+const FALLBACK_ICONS = ["✂️","💅","🧖‍♀️","💆‍♀️","👰","🌸","💄","👩‍🦰","🎀","🪮"];
+
 // ─── Defaults ────────────────────────────────────────────────────────────────
 const DEFAULT_BRAND: Brand = {
   business_name: "Rs Atelier Studio",
@@ -82,6 +92,16 @@ export default async function LandingPage() {
     address:             rawBrand?.address              ?? DEFAULT_BRAND.address,
     operating_hours:     rawBrand?.operating_hours      ?? DEFAULT_BRAND.operating_hours,
   };
+
+  // Load real services (with media)
+  const { data: rawServices } = await supabaseAdmin
+    .from("saloon_services")
+    .select("id, service_name, price, media")
+    .eq("tenant_id", TENANT_ID)
+    .eq("is_active", true)
+    .order("service_name");
+
+  const dbServices: ServiceDB[] = rawServices ?? [];
 
   // Load section config
   const { data: rawSections } = await supabaseAdmin
@@ -150,25 +170,55 @@ export default async function LandingPage() {
             <p className="text-gray-500 max-w-xl mx-auto">From hair to nails to full-body spa — we take care of everything so you can feel your best.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {SERVICES_DATA.map((svc) => (
-              <div key={svc.name} className="relative bg-white rounded-2xl p-6 border border-rose-100 card-hover shadow-sm">
-                {svc.popular && (
-                  <span className="absolute top-4 right-4 text-white text-xs px-2 py-1 rounded-full font-medium"
-                    style={{ backgroundColor: pc }}>Popular</span>
-                )}
-                <div className="text-4xl mb-4">{svc.icon}</div>
-                <h3 className="font-playfair text-xl font-semibold text-[#2D1B1E] mb-1">{svc.name}</h3>
-                <p className="text-xs mb-3 font-medium" style={{ color: pc }}>{svc.nameMy}</p>
-                <p className="text-gray-500 text-sm leading-relaxed mb-4">{svc.desc}</p>
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold" style={{ color: sc }}>{svc.price}</span>
-                  <a href={`https://wa.me/${wa}?text=${encodeURIComponent(`Hi! I'd like to book ${svc.name} 💆‍♀️`)}`}
-                    target="_blank" rel="noopener noreferrer"
-                    className="text-sm font-medium flex items-center gap-1 transition-colors"
-                    style={{ color: pc }}>Book →</a>
+            {(dbServices.length > 0 ? dbServices : SERVICES_DATA).map((svc, idx) => {
+              // Support both DB services and static fallback data
+              const isDb = "service_name" in svc;
+              const name  = isDb ? (svc as ServiceDB).service_name : (svc as typeof SERVICES_DATA[0]).name;
+              const price = isDb
+                ? ((svc as ServiceDB).price ? `RM ${(svc as ServiceDB).price}` : null)
+                : (svc as typeof SERVICES_DATA[0]).price;
+              const imgs  = isDb ? ((svc as ServiceDB).media ?? []).filter(m => m.type === "image") : [];
+              const firstImg = imgs[0]?.url ?? null;
+              const icon  = isDb ? FALLBACK_ICONS[idx % FALLBACK_ICONS.length] : (svc as typeof SERVICES_DATA[0]).icon;
+
+              return (
+                <div key={isDb ? (svc as ServiceDB).id : name}
+                  className="relative bg-white rounded-2xl overflow-hidden border border-rose-100 card-hover shadow-sm flex flex-col">
+                  {/* Image or emoji placeholder */}
+                  <div className="relative h-44 overflow-hidden flex-shrink-0">
+                    {firstImg ? (
+                      <Image src={firstImg} alt={name} fill sizes="400px"
+                        className="object-cover" unoptimized />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center"
+                        style={{ background: `linear-gradient(135deg, ${pc}22, ${pc}55)` }}>
+                        <span className="text-6xl">{icon}</span>
+                      </div>
+                    )}
+                    {/* Image count badge */}
+                    {imgs.length > 1 && (
+                      <span className="absolute bottom-2 right-2 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                        +{imgs.length - 1} photos
+                      </span>
+                    )}
+                  </div>
+                  {/* Content */}
+                  <div className="p-5 flex flex-col flex-1">
+                    <h3 className="font-playfair text-xl font-semibold text-[#2D1B1E] mb-1">{name}</h3>
+                    {!isDb && <p className="text-xs mb-2 font-medium" style={{ color: pc }}>{(svc as typeof SERVICES_DATA[0]).nameMy}</p>}
+                    {!isDb && <p className="text-gray-500 text-sm leading-relaxed mb-3">{(svc as typeof SERVICES_DATA[0]).desc}</p>}
+                    <div className="flex items-center justify-between mt-auto pt-2">
+                      {price && <span className="font-semibold text-sm" style={{ color: sc }}>{price}</span>}
+                      <a href={`https://wa.me/${wa}?text=${encodeURIComponent(`Hi! I'd like to book ${name} 💆‍♀️`)}`}
+                        target="_blank" rel="noopener noreferrer"
+                        className="text-sm font-medium ml-auto" style={{ color: pc }}>
+                        Book →
+                      </a>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -203,35 +253,69 @@ export default async function LandingPage() {
       </section>
     ),
 
-    gallery: (
-      <section key="gallery" id="gallery" className="py-20 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-14">
-            <p className="section-subtitle">Our Work</p>
-            <h2 className="section-title">Gallery</h2>
-            <p className="text-gray-500">A glimpse of our transformations</p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {GALLERY.map((item, i) => (
-              <div key={item.label} className={`rounded-2xl overflow-hidden card-hover cursor-pointer ${i === 0 ? "md:col-span-2 md:row-span-2" : ""}`}>
-                <div className={`w-full flex items-center justify-center ${i === 0 ? "h-80" : "h-44"}`}
-                  style={{ background: `linear-gradient(135deg, ${i % 2 === 0 ? `${pc}22, ${pc}66` : `${sc}33, ${sc}88`})` }}>
-                  <div className="text-center">
-                    <div className={`${i === 0 ? "text-7xl" : "text-5xl"} mb-2`}>{item.emoji}</div>
-                    <p className={`font-playfair font-medium ${i === 0 ? "text-xl text-[#2D1B1E]" : "text-sm"}`}
-                      style={{ color: i === 0 ? "#2D1B1E" : sc }}>{item.label}</p>
-                  </div>
+    gallery: (() => {
+      // Collect all images from DB services
+      const galleryImgs = dbServices
+        .flatMap(s => (s.media ?? [])
+          .filter(m => m.type === "image")
+          .map(m => ({ url: m.url, label: s.service_name }))
+        )
+        .slice(0, 6);
+
+      const hasRealPhotos = galleryImgs.length > 0;
+      // Pad with emoji placeholders if less than 6 real photos
+      const displayItems = hasRealPhotos
+        ? [
+            ...galleryImgs,
+            ...GALLERY.slice(galleryImgs.length).map(g => ({ url: null, label: g.label, emoji: g.emoji })),
+          ].slice(0, 6)
+        : GALLERY.map(g => ({ url: null, label: g.label, emoji: g.emoji }));
+
+      return (
+        <section key="gallery" id="gallery" className="py-20 bg-white">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="text-center mb-14">
+              <p className="section-subtitle">Our Work</p>
+              <h2 className="section-title">Gallery</h2>
+              <p className="text-gray-500">A glimpse of our transformations</p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {displayItems.map((item, i) => (
+                <div key={i}
+                  className={`rounded-2xl overflow-hidden card-hover cursor-pointer ${i === 0 ? "md:col-span-2 md:row-span-2" : ""}`}>
+                  {"url" in item && item.url ? (
+                    // Real photo
+                    <div className={`relative w-full ${i === 0 ? "h-80" : "h-44"}`}>
+                      <Image src={item.url} alt={item.label} fill sizes="600px"
+                        className="object-cover" unoptimized />
+                      <div className="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity flex items-end p-3">
+                        <p className="text-white text-sm font-semibold drop-shadow">{item.label}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    // Emoji placeholder
+                    <div className={`w-full flex items-center justify-center ${i === 0 ? "h-80" : "h-44"}`}
+                      style={{ background: `linear-gradient(135deg, ${i % 2 === 0 ? `${pc}22, ${pc}66` : `${sc}33, ${sc}88`})` }}>
+                      <div className="text-center">
+                        <div className={`${i === 0 ? "text-7xl" : "text-5xl"} mb-2`}>
+                          {"emoji" in item ? item.emoji : "📸"}
+                        </div>
+                        <p className={`font-playfair font-medium ${i === 0 ? "text-xl" : "text-sm"}`}
+                          style={{ color: i === 0 ? "#2D1B1E" : sc }}>{item.label}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <p className="text-center text-gray-400 text-sm mt-6">
+              📸 More photos on our{" "}
+              <a href={waLink} target="_blank" rel="noopener noreferrer" style={{ color: pc }} className="hover:underline">WhatsApp</a>
+            </p>
           </div>
-          <p className="text-center text-gray-400 text-sm mt-6">
-            📸 More photos on our{" "}
-            <a href={waLink} target="_blank" rel="noopener noreferrer" style={{ color: pc }} className="hover:underline">WhatsApp</a>
-          </p>
-        </div>
-      </section>
-    ),
+        </section>
+      );
+    })(),
 
     reviews: (
       <section key="reviews" className="py-20 bg-[#FFF5F7]">
